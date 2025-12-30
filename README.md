@@ -99,13 +99,17 @@ Enables efficient communication between Internet of Things (IoT) devices, smart 
 
 ## Observation
 
-1. The dataset is balanced(imbalance ratio = 1.007)
+1. Initially started with kaggle dataset on 5g network slice classification. But the dataset was not balanced and had only 7 features most of them were static features. The model simply memorized the values and gave accurate predictions(ROC 1.0). Such models can fail in realtime when the features are not constant. So took a dataset from colosseum dataset and it is balanced(imbalance ratio = 1.007) and it had more than 30 features.
 2. Static features such as ['timestamp','num_ues', 'imsi', 'rnti', 'slicing_enabled', 'slice_id',
        'slice_prb', 'power_multiplier', 'scheduling_policy', 
          'dl_n_samples', 
         'tx_errors_downlink_pct', 'ul_mcs', 'ul_buffer_bytes', 'rx_brate_uplink_mbps',
        'rx_pkts_uplink', 'rx_errors_uplink_pct', 'ul_rssi',  'phr',
        'sum_requested_prbs', 'sum_granted_prbs', 'dl_pmi', 'dl_ri', 'ul_n','tx_pkts_downlink'] are removed from the dataset as they are constant values for each slice type and model simply memorizes the values and gives accurate predictions(ROC 1.0). Such models can fail in realtime when the features are not constant and hence they are removed.
+Before removing static features, the model was giving precision, recall, F1score at 1.0 and roc_auc of 1.0. There was label leakage as most of the network features were constant for each slice type.
+3. network_load feature is engineered based on timestamp feature and is used to classify the network load as peak, off-peak and night.
+4. Xgboost(accuracy =0.92, roc_auc = 0.99) outperformed all the other models- logistic regression, random forest and decisiontree. 
+
 
 
 ## 📋 Example Predictions
@@ -117,9 +121,6 @@ Enables efficient communication between Internet of Things (IoT) devices, smart 
 | 4K Streaming         | 50 ms        | Yes            | eMBB       | High bandwidth requirement |
 | Remote Surgery       | 1 ms         | Yes            | URLLC      |Mission-critical, zero tolerance for delay |
 
-
-## References
-https://www.kaggle.com/datasets/puspakmeher/
 
 ## Dataset Citation
 
