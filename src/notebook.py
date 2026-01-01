@@ -12,6 +12,7 @@ from sklearn.model_selection import train_test_split
 import sklearn.metrics as confusion_matrix
 import glob
 from pathlib import Path
+import os
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.tree import DecisionTreeClassifier
 from imblearn.pipeline import Pipeline
@@ -25,16 +26,26 @@ from sklearn.preprocessing import StandardScaler
 
 
 #file path and format for dataset
-pathname ='data/'
+pathname = os.path.join(os.path.dirname(__file__), '../data/')
 file_format = '*.csv'
 
 #function to load and merge csv files for dataset
 def load_merge_dataset(pathname,file_format):
-    csv_files = Path(pathname).glob(file_format)
-    pd.concat((pd.read_csv(f) for f in csv_files), ignore_index=True).to_csv("combined_slice_dataset.csv", index=False)  
-    df=pd.read_csv("combined_slice_dataset.csv")
+    csv_files = list(Path(pathname).glob(file_format))
+    if not csv_files:
+        raise ValueError(f"No CSV files found in {pathname} with format {file_format}")
+    
+    combined_csv_path = os.path.join(os.path.dirname(__file__), "combined_slice_dataset.csv")
+    pd.concat((pd.read_csv(f) for f in csv_files), ignore_index=True).to_csv(combined_csv_path, index=False)  
+    df=pd.read_csv(combined_csv_path)
     df = df.drop(df.filter(regex='^Unnamed').columns,axis=1)
-    df.columns = df.columns.str.replace('[','').str.replace(']','').str.replace('(','').str.replace(')','').str.replace(' ','_').str.replace('%','pct').str.lower()
+    
+    # Improved column cleaning logic
+    df.columns = (df.columns
+                  .str.replace('%', 'pct')
+                  .str.replace(r'[\[\]\(\)]', '', regex=True)
+                  .str.replace(' ', '_')
+                  .str.lower())
     return df
 
 df=load_merge_dataset(pathname,file_format)
@@ -114,10 +125,11 @@ def check_classimbalance():
 
 check_classimbalance()
 def check_duplicates_in_dataset():
+    global df
     duplicated_record_count = df.duplicated().sum()
     if(duplicated_record_count>0):
         print("Number of duplicates is ",duplicated_record_count)
-        df.drop_duplicates()
+        df = df.drop_duplicates()
         print("Duplicated records are successfully dropped")
     else:
         print("No duplicate records found as the duplicated record count is ",duplicated_record_count)
@@ -516,13 +528,13 @@ plt.show()
 from sklearn.model_selection import RandomizedSearchCV
 from scipy.stats import randint, uniform
 param_dist = {
-    'n_estimators': 405,
-    'max_depth': 5,
-    'learning_rate': 0.179,
-    'subsample': 0.903,
-    'colsample_bytree': 0.716,
-    'min_child_weight': 4,
-    'gamma': 0.287
+    'n_estimators': [200, 300, 400, 500],
+    'max_depth': [3, 5, 7],
+    'learning_rate': [0.01, 0.05, 0.1, 0.2],
+    'subsample': [0.7, 0.8, 0.9],
+    'colsample_bytree': [0.7, 0.8, 0.9],
+    'min_child_weight': [1, 3, 5],
+    'gamma': [0, 0.1, 0.3]
 }
 
 random_search = RandomizedSearchCV(

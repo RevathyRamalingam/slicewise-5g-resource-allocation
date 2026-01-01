@@ -22,10 +22,19 @@ if not os.path.exists(directory):
     os.makedirs(directory)
 
 #function to load and merge csv files for dataset
-def load_dataset():
-    df=pd.read_csv("combined_slice_dataset.csv")
+csv_filename = "combined_slice_dataset.csv"
+def load_dataset(csv_filename):
+    combined_csv_path = os.path.join(os.path.dirname(__file__), csv_filename)
+            
+    df = pd.read_csv(combined_csv_path)
     df = df.drop(df.filter(regex='^Unnamed').columns,axis=1)
-    df.columns = df.columns.str.replace('[','').str.replace(']','').str.replace('(','').str.replace(')','').str.replace(' ','_').str.replace('%','pct').str.lower()
+    
+    # Improved column cleaning logic
+    df.columns = (df.columns
+                  .str.replace('%', 'pct')
+                  .str.replace(r'[\[\]\(\)]', '', regex=True)
+                  .str.replace(' ', '_')
+                  .str.lower())
     return df
 
 df=load_dataset()
