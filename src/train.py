@@ -21,9 +21,19 @@ directory = "model"
 if not os.path.exists(directory):
     os.makedirs(directory)
 
+#file path and format for dataset
+pathname ='data/'
+file_format = '*.csv'
+
+def combine_dataset(pathname,file_format):
+    csv_files = Path(pathname).glob(file_format)
+    pd.concat((pd.read_csv(f) for f in csv_files), ignore_index=True).to_csv("src/combined_slice_dataset.csv", index=False)  
+
+    
 #function to load and merge csv files for dataset
 csv_filename = "combined_slice_dataset.csv"
 def load_dataset(csv_filename):
+    combine_dataset(pathname,file_format)
     combined_csv_path = os.path.join(os.path.dirname(__file__), csv_filename)
             
     df = pd.read_csv(combined_csv_path)
@@ -37,7 +47,7 @@ def load_dataset(csv_filename):
                   .str.lower())
     return df
 
-df=load_dataset()
+df=load_dataset(csv_filename)
 df=df.fillna(0)
 
 #feature engineering 
@@ -55,6 +65,19 @@ def convert_timestamp_to_networkLoad(timestamp):
 
 df[['hour','network_load']] = df['timestamp'].apply(convert_timestamp_to_networkLoad).apply(pd.Series)
 
+ # Reliability Margin (How conservative is the MCS?)
+df['mcs_sinr_ratio'] = df['dl_mcs'] / (df['ul_sinr'] + 1)
+    
+# Grant Satisfaction (Is the scheduler prioritizing this user?)
+df['grant_ratio'] = df['sum_granted_prbs'] / (df['sum_requested_prbs'] + 1e-6)
+    
+# Efficiency (Throughput per PRB)
+df['prb_efficiency'] = df['tx_brate_downlink_mbps'] / (df['sum_granted_prbs'] + 1e-6)
+    
+# Latency Signature (Buffer vs Throughput)
+df['latency_proxy'] = df['dl_buffer_bytes'] / (df['tx_brate_downlink_mbps'] + 0.1)
+
+
 column_names = [ 'timestamp','num_ues', 'imsi', 'rnti', 'slicing_enabled', 'slice_id',
        'slice_prb', 'power_multiplier', 'scheduling_policy', 'dl_mcs',
        'dl_n_samples', 'dl_buffer_bytes', 'tx_brate_downlink_mbps',
@@ -71,7 +94,6 @@ df_fulltrain = df_fulltrain.reset_index(drop=True)
 df_train = df_train.reset_index(drop=True)  
 df_val = df_val.reset_index(drop=True)
 df_test = df_test.reset_index(drop=True)
-
 
 y_fulltrain = df_fulltrain['slice_id'].values
 y_train = df_train['slice_id'].values
@@ -91,8 +113,9 @@ def remove_static_columns_from_dataset(column_names):
         del df_val[col]
         del df_test[col]
 
-#columns_to_keep = ['dl_mcs', 'ul_sinr', 'tx_brate_downlink_mbps', 'dl_buffer_bytes','ul_turbo_iters', 'dl_cqi',
-     #  'ul_n_samples','network_load']
+columns_to_keep = ['dl_mcs', 'ul_sinr', 'tx_brate_downlink_mbps', 'dl_buffer_bytes','ul_turbo_iters', 'dl_cqi',
+      'ul_n_samples','network_load','mcs_sinr_ratio', 'grant_ratio',
+       'prb_efficiency', 'latency_proxy']
 
 column_names = [ 'timestamp','num_ues', 'imsi', 'rnti', 'slicing_enabled', 'slice_id',
        'slice_prb', 'power_multiplier', 'scheduling_policy', 
@@ -103,17 +126,18 @@ column_names = [ 'timestamp','num_ues', 'imsi', 'rnti', 'slicing_enabled', 'slic
        ]
 
 remove_static_columns_from_dataset(column_names)
+print("shape of df_fulltrain",df_fulltrain.shape)
 
 def train_model():
 
     pipeline =make_pipeline(DictVectorizer(sparse=False),XGBClassifier(
         n_estimators= 405,
-        max_depth= 5,
-        learning_rate= 0.179,
-        subsample= 0.903,
-        colsample_bytree= 0.716,
-        min_child_weight= 4,
-        gamma= 0.287,
+        max_depth= 10,
+        learning_rate= 0.104,
+        subsample= 0.811,
+        colsample_bytree= 0.713,
+        min_child_weight= 5,
+        gamma= 0.298,
         random_state=42
     ))
 

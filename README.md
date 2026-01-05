@@ -109,6 +109,15 @@ Enables efficient communication between Internet of Things (IoT) devices, smart 
 Before removing static features, the model was giving precision, recall, F1score at 1.0 and roc_auc of 1.0. There was label leakage as most of the network features were constant for each slice type.
 3. network_load feature is engineered based on timestamp feature and is used to classify the network load as peak, off-peak and night.
 4. Xgboost(accuracy =0.92, roc_auc = 0.99) outperformed all the other models- logistic regression, random forest and decisiontree. 
+5. The model was 10% not accurate for critical mission applications(Recall =0.90), after engineering features such as
+'mcs_sinr_ratio', 'grant_ratio', 'prb_efficiency', 'latency_proxy'
+mcs_sinr_ratio - This feature relates the data rate capability (MCS) to the actual signal quality (SINR)
+grant_ratio - Captures how efficiently the network allocates resources to user requests
+prb_efficiency - Measures how effectively allocated spectrum resources are actually used
+Helped distinguish between simple capacity constraints and actual network anomalies
+Reduced false negatives where raw PRB usage appeared normal but efficiency was poor
+latency_proxy - Provides an indirect measure of end-to-end performance degradation
+Helped catch cascade failures and multi-factor degradation scenarios
 
 
 

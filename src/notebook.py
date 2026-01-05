@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[50]:
+# In[1]:
 
 
 import pandas as pd
@@ -12,7 +12,6 @@ from sklearn.model_selection import train_test_split
 import sklearn.metrics as confusion_matrix
 import glob
 from pathlib import Path
-import os
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.tree import DecisionTreeClassifier
 from imblearn.pipeline import Pipeline
@@ -22,30 +21,20 @@ from sklearn.feature_extraction import DictVectorizer
 from sklearn.preprocessing import StandardScaler
 
 
-# In[51]:
+# In[2]:
 
 
 #file path and format for dataset
-pathname = os.path.join(os.path.dirname(__file__), '../data/')
+pathname ='data/'
 file_format = '*.csv'
 
 #function to load and merge csv files for dataset
 def load_merge_dataset(pathname,file_format):
-    csv_files = list(Path(pathname).glob(file_format))
-    if not csv_files:
-        raise ValueError(f"No CSV files found in {pathname} with format {file_format}")
-    
-    combined_csv_path = os.path.join(os.path.dirname(__file__), "combined_slice_dataset.csv")
-    pd.concat((pd.read_csv(f) for f in csv_files), ignore_index=True).to_csv(combined_csv_path, index=False)  
-    df=pd.read_csv(combined_csv_path)
+    csv_files = Path(pathname).glob(file_format)
+    pd.concat((pd.read_csv(f) for f in csv_files), ignore_index=True).to_csv("combined_slice_dataset.csv", index=False)  
+    df=pd.read_csv("combined_slice_dataset.csv")
     df = df.drop(df.filter(regex='^Unnamed').columns,axis=1)
-    
-    # Improved column cleaning logic
-    df.columns = (df.columns
-                  .str.replace('%', 'pct')
-                  .str.replace(r'[\[\]\(\)]', '', regex=True)
-                  .str.replace(' ', '_')
-                  .str.lower())
+    df.columns = df.columns.str.replace('[','').str.replace(']','').str.replace('(','').str.replace(')','').str.replace(' ','_').str.replace('%','pct').str.lower()
     return df
 
 df=load_merge_dataset(pathname,file_format)
@@ -55,7 +44,7 @@ df.shape
 
 
 
-# In[52]:
+# In[3]:
 
 
 def convert_timestamp_to_networkLoad(timestamp):
@@ -70,6 +59,19 @@ def convert_timestamp_to_networkLoad(timestamp):
     return hour,load
 
 df[['hour','network_load']] = df['timestamp'].apply(convert_timestamp_to_networkLoad).apply(pd.Series)
+
+  # 1. Reliability Margin (How conservative is the MCS?)
+df['mcs_sinr_ratio'] = df['dl_mcs'] / (df['ul_sinr'] + 1)
+
+    # 2. Grant Satisfaction (Is the scheduler prioritizing this user?)
+df['grant_ratio'] = df['sum_granted_prbs'] / (df['sum_requested_prbs'] + 1e-6)
+
+    # 3. Efficiency (Throughput per PRB)
+df['prb_efficiency'] = df['tx_brate_downlink_mbps'] / (df['sum_granted_prbs'] + 1e-6)
+
+    # 4. Latency Signature (Buffer vs Throughput)
+df['latency_proxy'] = df['dl_buffer_bytes'] / (df['tx_brate_downlink_mbps'] + 0.1)
+
 column_names = [ 'timestamp','num_ues', 'imsi', 'rnti', 'slicing_enabled', 'slice_id',
        'slice_prb', 'power_multiplier', 'scheduling_policy', 'dl_mcs',
        'dl_n_samples', 'dl_buffer_bytes', 'tx_brate_downlink_mbps',
@@ -77,7 +79,8 @@ column_names = [ 'timestamp','num_ues', 'imsi', 'rnti', 'slicing_enabled', 'slic
        'ul_n_samples', 'ul_buffer_bytes', 'rx_brate_uplink_mbps',
        'rx_pkts_uplink', 'rx_errors_uplink_pct', 'ul_rssi', 'ul_sinr', 'phr',
        'sum_requested_prbs', 'sum_granted_prbs', 'dl_pmi', 'dl_ri', 'ul_n',
-       'ul_turbo_iters','hour','network_load']
+       'ul_turbo_iters','hour','network_load','mcs_sinr_ratio', 'grant_ratio',
+       'prb_efficiency', 'latency_proxy']
 
 for col in column_names:
     print(col,"  ",df[col].unique())
@@ -85,7 +88,7 @@ for col in column_names:
 
 
 
-# In[53]:
+# In[4]:
 
 
 for col in column_names:
@@ -104,7 +107,7 @@ for col in column_names:
 
 
 
-# In[54]:
+# In[5]:
 
 
 df['network_load'].unique()
@@ -113,7 +116,7 @@ df['network_load'].unique()
 
 # Let's check if the dataset is balanced across slice types.
 
-# In[55]:
+# In[6]:
 
 
 def check_classimbalance():
@@ -125,11 +128,10 @@ def check_classimbalance():
 
 check_classimbalance()
 def check_duplicates_in_dataset():
-    global df
     duplicated_record_count = df.duplicated().sum()
     if(duplicated_record_count>0):
         print("Number of duplicates is ",duplicated_record_count)
-        df = df.drop_duplicates()
+        df.drop_duplicates()
         print("Duplicated records are successfully dropped")
     else:
         print("No duplicate records found as the duplicated record count is ",duplicated_record_count)
@@ -140,7 +142,7 @@ check_duplicates_in_dataset()
 # Null check on columns - done . There are no null values in the dataset.
 # There are no duplicated values in the dataset.
 
-# In[57]:
+# In[7]:
 
 
 df_fulltrain , df_test= train_test_split(df,test_size=0.2,random_state=42)
@@ -183,7 +185,7 @@ plt.yticks(fontsize=10)
 plt.show()
 
 
-# In[ ]:
+# In[8]:
 
 
 unique_counts=df.nunique()
@@ -196,7 +198,7 @@ print(quasi_static_cols)
 
 # Let's split the dataset into training and testing sets.
 
-# In[ ]:
+# In[9]:
 
 
 def remove_static_columns_from_dataset(column_names):
@@ -219,13 +221,13 @@ column_names = [ 'timestamp','num_ues', 'imsi', 'rnti', 'slicing_enabled', 'slic
 remove_static_columns_from_dataset(column_names)
 
 
-# In[ ]:
+# In[10]:
 
 
 df["hour"].value_counts().sort_index()
 
 
-# In[ ]:
+# In[11]:
 
 
 # Quick check for static features
@@ -252,7 +254,7 @@ check_static_features(df)
 check_low_variance(df)
 
 
-# In[ ]:
+# In[12]:
 
 
 def train_model(df,y,C):
@@ -288,12 +290,12 @@ print_classification_report(y_pred_test,y_pred_proba_test,y_test)
 
 # Let's do cross validation with 5 fold and check the performance of the model.
 
-# In[ ]:
+# In[25]:
 
 
 from sklearn.model_selection import KFold, cross_val_score
 
-model= LogisticRegression(solver='newton-cg')
+model= LogisticRegression(solver='lbfgs',max_iter =1000)
 dv = DictVectorizer(sparse=False) 
 X_dict=df_fulltrain.to_dict(orient='records')
 X=dv.fit_transform(X_dict)
@@ -318,7 +320,7 @@ for c in reg_params:
 
 # 
 
-# In[ ]:
+# In[14]:
 
 
 Model_ROC_AUC_scores = []
@@ -331,7 +333,7 @@ Model_ROC_AUC_scores.append(("Logistic Regression",np.round(roc_auc_score(y_test
 # With full train and test data, the model is able to predict the slice_id with an accuracy of 0.86 and ROC_AUC of 0.96
 # It is stable and consistent across multiple runs and cross validation test also confirms that model is stable and consistent.
 
-# In[ ]:
+# In[15]:
 
 
 from sklearn.tree import DecisionTreeClassifier,export_text
@@ -371,7 +373,7 @@ plt.show()
 
 # Let's narrow down for  depth=4,5,6,7,8as the roc_auc is maximum(0.98) after which it decreases.
 
-# In[ ]:
+# In[16]:
 
 
 scores = []
@@ -397,7 +399,7 @@ sns.heatmap(pivot_table, annot=True, fmt=".3f")
 # max_depth =6 and min_samples_leaf=3 roc_auc of 0.983.Lets test with test data to see if the model doesnt overfit.
 # We get the same results with test data as well.
 
-# In[ ]:
+# In[17]:
 
 
 dt = DecisionTreeClassifier(max_depth=6,min_samples_leaf=3, random_state=42)
@@ -411,7 +413,7 @@ Model_ROC_AUC_scores.append(('Decision Tree', np.round(roc_auc,3)))
 X_train.shape
 
 
-# In[ ]:
+# In[18]:
 
 
 from sklearn.ensemble import RandomForestClassifier
@@ -440,7 +442,7 @@ print(export_text(rf.estimators_[0], feature_names=list(dv.get_feature_names_out
 
 # With 50 estimators in ensemble model, we are able to get 0.987 roc_auc score
 
-# In[ ]:
+# In[19]:
 
 
 rf = RandomForestClassifier(n_estimators=50, random_state=42)
@@ -468,7 +470,7 @@ print("Random Forest with TestData Accuracy:", np.round(accuracy, 3),"ROC AUC:",
 
 
 
-# In[ ]:
+# In[20]:
 
 
 from xgboost import XGBClassifier
@@ -489,7 +491,7 @@ Model_ROC_AUC_scores.append(("XGBoost", np.round(scores.mean(),3)))
 
 
 
-# In[ ]:
+# In[21]:
 
 
 print(Model_ROC_AUC_scores)
@@ -522,19 +524,19 @@ plt.show()
 # From the graph it is clear that xgboost has the best performance and in network slicing even a small increase in performance can lead to a significant improvement in the overall system performance.
 # Let's finetune hyperparameters in XGBoost using GridSearch
 
-# In[ ]:
+# In[22]:
 
 
 from sklearn.model_selection import RandomizedSearchCV
 from scipy.stats import randint, uniform
 param_dist = {
-    'n_estimators': [200, 300, 400, 500],
-    'max_depth': [3, 5, 7],
-    'learning_rate': [0.01, 0.05, 0.1, 0.2],
-    'subsample': [0.7, 0.8, 0.9],
-    'colsample_bytree': [0.7, 0.8, 0.9],
-    'min_child_weight': [1, 3, 5],
-    'gamma': [0, 0.1, 0.3]
+    'n_estimators': randint(200, 600),
+    'max_depth': randint(5, 12),
+    'learning_rate': uniform(0.01, 0.2),
+    'subsample': uniform(0.7, 0.3),
+    'colsample_bytree': uniform(0.7, 0.3),
+    'min_child_weight': randint(1, 7),
+    'gamma': uniform(0, 0.3)
 }
 
 random_search = RandomizedSearchCV(
@@ -559,10 +561,11 @@ best_model = random_search.best_estimator_
 
 
 # Through RandomSearchCV the best parameters are:
-# Best parameters: {'colsample_bytree': np.float64(0.7160455890242107), 'gamma': np.float64(0.2875624490649595), 'learning_rate': np.float64(0.17942862881911797), 'max_depth': 5, 'min_child_weight': 4, 'n_estimators': 405, 'subsample': np.float64(0.9030309713272909)}
-# Best score: 0.9913
+# Fitting 5 folds for each of 100 candidates, totalling 500 fits
+# Best parameters: {'colsample_bytree': np.float64(0.7130811315263301), 'gamma': np.float64(0.2983651532392023), 'learning_rate': np.float64(0.10398890279818859), 'max_depth': 10, 'min_child_weight': 5, 'n_estimators': 205, 'subsample': np.float64(0.8110476100766333)}
+# Best score: 0.9971
 
-# In[ ]:
+# In[23]:
 
 
 best_model.fit(X, y_fulltrain)
