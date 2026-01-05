@@ -1,6 +1,8 @@
 import pytest
 import pandas as pd
 import src.train as train
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
 def test_load_dataset1(tmp_path, monkeypatch):
     #create a mock csv file
@@ -38,3 +40,13 @@ def test_load_dataset2(tmp_path, monkeypatch):
 
     assert "valid_column_name" in result.columns
     assert "some_column" in result.columns
+
+def test_convert_timestamp_to_networkload_tc1():
+    """Test off-peak load at 13:00 Rome time."""
+    rome_dt = datetime(2026, 1, 2, 13, 0, 0, tzinfo=ZoneInfo("Europe/Rome"))
+    off_peak_timestamp = int(rome_dt.timestamp() * 1000)
+
+    hour_op, load_op = train.convert_timestamp_to_networkLoad(off_peak_timestamp)
+
+    assert load_op == "off-peak"
+    assert hour_op == 13
