@@ -150,5 +150,5 @@ def save_model(pipeline,filename):
     print(f"Model is saved to {os.path.join(directory,filename)}")
 
 pipeline = train_model()
-save_model(pipeline,'xgboost.bin')
+save_model(pipeline,'xgboost_model.bin')
 

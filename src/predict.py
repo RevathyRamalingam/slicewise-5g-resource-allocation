@@ -318,7 +318,7 @@ def predict_networkslice_category(customer: NetworkMetricsSingle) -> PredictResp
 
 # Load the pre-trained model
 def load_model():
-    with open('model/xgboost.bin', 'rb') as f_in:
+    with open('xgboost_model.bin', 'rb') as f_in:
         pipeline = pickle.load(f_in)
     return pipeline
 

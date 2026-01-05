@@ -55,7 +55,7 @@ payload = {
 if st.button("Predict Slice Category", use_container_width=True):
     try:
         # Connect to your FastAPI backend
-        response = requests.post("http://localhost:8080/predict", json=payload)
+        response = requests.post("http://localhost:9696/predict", json=payload)
         
         if response.status_code == 200:
             result = response.json()
