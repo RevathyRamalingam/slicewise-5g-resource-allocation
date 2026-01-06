@@ -160,10 +160,15 @@ The project folder consists of the following files and directories:
 
 ### Files Inside Folders:
 -**src/**: Contains 
+
        `predict.py` the FASTAPI app to make predictions 
+
        `train.py`  Saves the final model as `xgboost_model.bin` in the `model` directory after dataset cleaning, hyperparameter tuning, and model training (done in the Jupyter notebook `notebook.ipynb`). 
+
        `notebook.py` - run this script to see how hyperparameter tuning and model is evaluated against performance like recall, precision, ROC_AUC and F1 scores.
+
        `combined_slice_dataset.csv` combines 3 csv files inside data folder and merges into one.
+
 - **tests/**: contains pytest files test_train.py
        `__init__.py`  added for running pytest
 - **model/**: Contains the pickle-saved model named `xgboost_model.bin`.
@@ -185,7 +190,9 @@ You can run the notebook.py script to see how the model is trained and hyperpara
 git clone https://github.com/RevathyRamalingam/slicewise-5g-resource-allocation.git 
 
 go to project root folder and run below command 
+
 cd slicewise-5g-resource-allocation 
+
 > python src/notebook.py
 ---
 
@@ -275,12 +282,13 @@ The output will be as follows:
 {"slice_category":"eMBB enhanced MobileBroadBand","probabilities":{"eMBB enhanced MobileBroadBand":57.1517,"MTC MassTransport Communication":38.532,"URLLC Ultra Reliable LowLatency Communication":4.3163}}
 
 
-Option 2: You can run docker image  locally by pulling from Dockerhub
+Option 2: You can run docker image  locally by pulling from Dockerhub,     
+But this can take a lot of time as the images are in MBs, may be you can trigger the command and go for a coffee break!!
 
     ```bash
     docker run -it -p 9696:9696 -p 8501:8501 revathy1/slicewise:v2
     ```
-But this can take a lot of time as the images are in MBs, may be you can trigger the command and go for a coffee break!!
+
 ---
 
 ☁️ Steps to Deploy the Project in the Cloud (Render)
