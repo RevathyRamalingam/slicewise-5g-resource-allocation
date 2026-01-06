@@ -172,9 +172,11 @@ The project folder consists of the following files and directories:
 contains distribution of target graph, correlation matrix, Confusion matrix, DecisionTree Hyperparameter tuning graphs and random Forest  Hyperparameter tuning heatmap and Model comparision.
 - **output_screenshots/** : contains the screenshots of streamlit UI for prediction
 ---
-🎥 Demo Videos on Cloud Deployment
+🎥 Demo Video on Cloud Deployment
 
-Part 1: Cloud Deployment Overview and testing[https://www.loom.com/share/6632698ca88f424c886b87c38bfc676a]
+Part 1: Predicting network slice using cloud Render deployment[https://www.loom.com/share/289082ae715c41a7b3a2959584882d07] 
+
+Part 2:Predicting network slice in 5g: Key parameters and Insights [https://www.loom.com/share/768a3a63c4504c33970dc66956c659b3] 
 
 ---
 TRAINING THE MODEL
@@ -269,77 +271,48 @@ curl -X 'POST' 'http://localhost:9696/predict' -H 'accept: application/json'  -H
                 "latency_proxy": 0.0}'
   ```
 The output will be as follows: 
+
 {"slice_category":"eMBB enhanced MobileBroadBand","probabilities":{"eMBB enhanced MobileBroadBand":57.1517,"MTC MassTransport Communication":38.532,"URLLC Ultra Reliable LowLatency Communication":4.3163}}
 
 
-Option 2: You can run docker image from Dockerhub
+Option 2: You can run docker image  locally by pulling from Dockerhub
 
-
-
-http://127.0.0.1:9696/docs
-
+    ```bash
+    docker run -it -p 9696:9696 -p 8501:8501 revathy1/slicewise:v2
+    ```
+But this can take a lot of time as the images are in MBs, may be you can trigger the command and go for a coffee break!!
 ---
 
 ☁️ Steps to Deploy the Project in the Cloud (Render)
-There are two ways by which you can run the project in cloud:
-1. pulling the docker image from Dockerhub 
-Select image from dockerhub with the name "docker pull revathy1/obesity-predict:1" and choose deploy.
+ 
+Running the docker image from Dockerhub in cloud Render or in any cloud platform like AWS/GCP 
+
+Select image from dockerhub with the name "docker pull revathy1/slicewise:v2" and choose deploy.
 It will automatically run the image from docker hub.
 
-2. Deploying it manually 
-The settings for Render are also available as screenshots in output_screenshots folder.Below is the detailed steps for the deployment.
-
-Go to Render.
-
-Sign in to your account or create a new one.
-
-Once logged in, go to the Dashboard on Render.
-
-Click the New button in the top-right corner and select Web Service (or another appropriate service type).
-
-You'll be prompted to Connect GitHub to Render if you haven't done so already. Follow the steps to authorize Render to access your GitHub repositories.
-
-After connecting GitHub, select the repository:
-
-https://github.com/RevathyRamalingam/obesity-class-prediction
-
-In Settings, fill in the following:
-
-General:
-
-Name: Choose a name for your project.
-
-Region: Select the region closest to your geographical location.
-
-Deploy & Build:
-
-Repository: https://github.com/RevathyRamalingam/slicewise-5g-resource-allocation
-
-Branch: master
-
-Build Command: echo "Hello"
-
-Start Command: pip install -r requirements.txt && uvicorn main:app --host 0.0.0.0 --port 9696 --reload
-
-Choose the default settings for the rest of the fields.
-
-After deployment, you will see the URL where the service is running in the cloud.
-
-Click on the link to access the Prediction Service and test it with the sample JSON input provided earlier.
+You can also check the output from the https://slicewise-v2.onrender.com where the application is deployed in Render.
 
 Error Handling (Example)
-If you provide an extra field in the input JSON, you'll receive a 422 Unprocessable Entity error:
+Pydantic validation is supported for all network parameters and you will be notified with the appropriate error.
+But since FASTAPI server is designed to be a backend process and streamUI as frontend, you can use below curl command to check pydantic validations for the REST calls. 
 
-{
-  "detail": [
-    {
-      "type": "extra_forbidden",
-      "loc": ["body", "new"],
-      "msg": "Extra inputs are not permitted",
-      "input": 9
-    }
-  ]
-}
+curl -X 'POST' 'http://localhost:9696/predict' -H 'accept: application/json'  -H 'Content-Type: application/json' -d '{"dl_mcs": 4.12121,
+                "ul_sinr": 34.0305,
+                "tx_brate_downlink_mbps": 0.009184,
+                "dl_buffer_bytes": 0,
+                "ul_turbo_iters": 1.0,
+                "dl_cqi": 48.0,
+                "ul_n_samples": 42,
+                "network_load": "night",
+                "mcs_sinr_ratio": 0.121,
+                "grant_ratio": 2.76,
+                "prb_efficiency": 0.0003,
+                "latency_proxy": 0.0}'
+
+Sample output:
+
+{"detail":[{"type":"less_than_equal","loc":["body","dl_cqi"],"msg":"Input should be less than or equal to 15","input":48.0,"ctx":{"le":15.0}}]}
+
 
 ---
 
@@ -358,4 +331,4 @@ Dataset: https://github.com/wineslab/colosseum-oran-coloran-dataset
 
 ## Acknowledgement
 
-I would like to thank Alexey Grigorev for conducting this mlzoomcamp course in DataTalksClub enabling me to do such an interesting capstone project in network side and Michael Polese for providing awesome 5g dataset.
+I would like to thank Alexey Grigorev for giving this practical hands-on based mlzoomcamp course in DataTalksClub enabling me to do such an interesting capstone project in network slicing and Michael Polese for providing awesome 5g dataset.
