@@ -4,12 +4,13 @@ import pandas as pd
 
 # Set page configuration
 st.set_page_config(page_title="SliceWise 5G Slice Predictor", layout="wide")
-
+st.image("graph_visualization/networkslicing.jpg", width='stretch')
 st.title("📡 5G Network Slice Resource Allocation")
 st.markdown("Adjust the network metrics below to predict the required Slice Category (**eMBB**, **MTC**, or **URLLC**).")
 
 # Sidebar for Network Load
 st.sidebar.header("Global Context")
+st.sidebar.image("graph_visualization/sidebar.jpg", width='stretch')
 network_load = st.sidebar.selectbox("Network Load", ["peak", "off-peak", "night"])
 
 # Main Layout: Three columns for parameters
@@ -52,7 +53,7 @@ payload = {
     "latency_proxy": latency_proxy
 }
 
-if st.button("Predict Slice Category", use_container_width=True):
+if st.button("Predict Slice Category", width='stretch'):
     try:
         # Connect to your FastAPI backend
         response = requests.post("http://localhost:9696/predict", json=payload)
