@@ -278,7 +278,7 @@ class NetworkMetricsSingle(BaseModel):
 app = FastAPI()
 
 class PredictResponse(BaseModel):
-    slice_category: str # Predicted class (Slice 0: eMBB UEs, Slice 1: MTC UEs, Slice 2: URLLC UEs)
+    slice_category: str # Predicted class (Slice 0: eMBB UEs, Slice 1: mMTC UEs, Slice 2: URLLC UEs)
     probabilities: Dict[str, float]  # Dictionary of class probabilities
 
 # Prediction function
@@ -292,7 +292,7 @@ def predict_networkslice_category(customer: NetworkMetricsSingle) -> PredictResp
     try:
         ypred, y_pred_proba = predict_slice(customer.model_dump(), pipeline)
 
-        classes = ['eMBB enhanced MobileBroadBand', 'MTC MassTransport Communication' ,'URLLC Ultra Reliable LowLatency Communication']
+        classes = ['eMBB enhanced MobileBroadBand', 'mMTC massive MachineType Communication' ,'URLLC Ultra Reliable LowLatency Communication']
 
         if isinstance(ypred[0], str):  # If it's already a class label
             predicted_class = ypred[0]  # Directly use the class label
