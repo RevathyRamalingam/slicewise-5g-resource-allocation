@@ -198,8 +198,9 @@ cd slicewise-5g-resource-allocation
 Before removing static features, the model was giving precision, recall, F1score at 1.0 and roc_auc of 1.0. There was label leakage as most of the network features were constant for each slice type. 
 3. network_load feature is engineered based on timestamp feature and is used to classify the network load as peak, off-peak and night. 
 4. mcs_sinr_ratio', 'grant_ratio','prb_efficiency', 'latency_proxy' features were also derived from dl_mcs, ul_sinr and other input features. 
-5. Xgboost(accuracy =0.96, roc_auc = 0.997, F1score = 0.965) outperformed all the other models- logistic regression, random forest and decisiontree. 
-6. The model was 10% not accurate for critical mission applications(Recall =0.90), after engineering features such as
+5. Xgboost(accuracy =0.96, roc_auc = 0.997, F1score = 0.965) outperformed all the other models- logistic regression, random forest and decisiontree. [('Logistic Regression', np.float64(0.964)), ('Decision Tree', np.float64(0.994)), ('Random Forest', np.float64(0.994)), ('XGBoost', np.float64(0.997))] even a 0.03 improvement can significantly optimize network slicing at operator side. 
+6. XGboost model is hyperparamater tuned using RandomCVSearch with 5 folds and optimal parameters are identified to be used in the final model. It is tested against test dataset to make sure it doesn't overfit. 
+7. The model was 10% not accurate for critical mission applications(Recall =0.90), after engineering features such as
 'mcs_sinr_ratio', 'grant_ratio', 'prb_efficiency', 'latency_proxy'
 mcs_sinr_ratio - This feature relates the data rate capability (MCS) to the actual signal quality (SINR)
 grant_ratio - Captures how efficiently the network allocates resources to user requests
@@ -209,7 +210,7 @@ Reduced false negatives where raw PRB usage appeared normal but efficiency was p
 latency_proxy - Provides an indirect measure of end-to-end performance degradation
 Helped catch cascade failures and multi-factor degradation scenarios
 7. pytests were written to cover unit testing scenarios
-8. Solution is docker containerized and deployed in Render cloud ,the streamlit UI interacts with backendd FASTAPI server to predict the network slice as per the user network pattern.
+8. Solution is docker containerized and deployed in Render cloud ,the streamlit UI interacts with backend FASTAPI server to predict the network slice as per the user network pattern.
 
 ## Future Scope 
 1. Real-Time Dynamic Slicing 
@@ -224,7 +225,7 @@ Add ML models to detect unusual slice behavior, potential threats/attacks, or pe
 
 ## 🛠 Steps to Run the Project Locally
 
-### Option 1: Using Docker
+### Option 1: Running Docker Container locally
 
 1. Clone the repository:
     ```bash
@@ -233,56 +234,23 @@ Add ML models to detect unusual slice behavior, potential threats/attacks, or pe
 
 2. Build the Docker image:
     ```bash
-    docker build -t obesity-prediction .
+    cd slicewise-5g-resource-allocation
+    docker build -t slice-wise .
     ```
 
 3. Run the Docker container:
     ```bash
-    docker run -it -p 9696:9696 obesity-prediction:latest
+    docker run -it -p 9696:9696 -p 8501:8501 slice-wise:latest
     ```
 
-4. Open your browser and navigate to:
+4. Open your browser and navigate to streamlit UI which inturn accesses the background FASTAPI server to get slicing predictions :
     ```
-    http://127.0.0.1:9696/docs
-    ```
-
-5. Provide the following JSON input to test the prediction:
-    ```json
-    {
-      "age": 39,
-      "gender": "female",
-      "height": 1.51,
-      "weight": 72,
-      "calc": "no",
-      "favc": "yes",
-      "fcvc": 2.396265,
-      "ncp": 1.073421,
-      "scc": "no",
-      "smoke": "no",
-      "ch2o": 1.5,
-      "family_history_with_overweight": "yes",
-      "faf": 0.022598,
-      "tue": 0.061282,
-      "caec": "sometimes",
-      "mtrans": "automobile"
-    }
+    http://127.0.0.1:8501
     ```
 
-6. The output will look like this:
-    ```json
-    {
-      "Health_category": "overweight_level_ii",
-      "probabilities": {
-        "insufficient_weight": 0,
-        "normal_weight": 0.1317,
-        "obesity_type_i": 31.7571,
-        "obesity_type_ii": 0,
-        "obesity_type_iii": 0,
-        "overweight_level_i": 4.5125,
-        "overweight_level_ii": 63.5986
-      }
-    }
-    ```
+5. Adjust the network parameters like network_load, ul_sinr, bitrate, cqi, dl_mcs etc to see how slicing varies.
+
+6. The output will give you the targeted network_slice along with their probabilities
 
 Alternatively, you can also use a **curl** command to see the output in the CLI:
 ```bash
