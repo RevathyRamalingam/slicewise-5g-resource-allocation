@@ -100,7 +100,7 @@ for col in column_names:
         alpha=0.1
     )
     #plt.xscale(col)
-    plt.title(f"{col} vs Slice Type")
+    plt.title(f"{col} vs Slice Id")
     plt.show()
 
 

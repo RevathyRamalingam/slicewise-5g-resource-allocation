@@ -153,7 +153,7 @@ The project folder consists of the following files and directories:
   - Perform correlation and mutual information analysis.
   - Check target distribution.
   - Hyperparameter tuning with cross-validation.
-  - Evaluate models like Logistic Regression, Decision Tree, and Random Forest.
+  - Evaluate models like Logistic Regression, Decision Tree, Random Forest and XGBoost.
 - `uv.lock` — Locks the specific versions of dependencies to ensure reproducibility.
 - `pyproject.toml` — Contains the dependencies for the Uvicorn project. 
 
@@ -161,7 +161,7 @@ The project folder consists of the following files and directories:
 -**src/**: Contains 
        `predict.py` the FASTAPI app to make predictions 
        `train.py`  Saves the final model as `xgboost_model.bin` in the `model` directory after dataset cleaning, hyperparameter tuning, and model training (done in the Jupyter notebook `notebook.ipynb`). 
-       `notebook.py` - run this script to see how hyperparameter tuning and model is evaluated against performance like recall, precision and F1 scores.
+       `notebook.py` - run this script to see how hyperparameter tuning and model is evaluated against performance like recall, precision, ROC_AUC and F1 scores.
        `combined_slice_dataset.csv` combines 3 csv files inside data folder and merges into one.
 - **tests/**: contains pytest files test_train.py
        `__init__.py`  added for running pytest
@@ -175,13 +175,14 @@ contains distribution of target graph, correlation matrix, Confusion matrix, Dec
 
 Part 1: Cloud Deployment Overview and testing[https://www.loom.com/share/6632698ca88f424c886b87c38bfc676a]
 
-Part 2: Pydantic validation on API[https://www.loom.com/share/4cefb723b71d4d3088d9f00128ad1358]
-
 ---
 TRAINING THE MODEL
 
-You can run the notebook.py script to see how the model is trained and hyperparameter tuning is done for several algorithms such as LogisticRegression, DecisionTree and randomForestRegressor.
-go to project root folder and run below command
+You can run the notebook.py script to see how the model is trained and hyperparameter tuning is done for several algorithms such as LogisticRegression, DecisionTree, XGBoost and randomForestRegressor. 
+git clone https://github.com/RevathyRamalingam/slicewise-5g-resource-allocation.git 
+
+go to project root folder and run below command 
+cd slicewise-5g-resource-allocation 
 > python src/notebook.py
 ---
 
@@ -227,8 +228,8 @@ Add ML models to detect unusual slice behavior, potential threats/attacks, or pe
 
 1. Clone the repository:
     ```bash
-    git clone https://github.com/RevathyRamalingam/obesity-class-prediction.git
-    ```
+    git clone https://github.com/RevathyRamalingam/slicewise-5g-resource-allocation.git
+     ```
 
 2. Build the Docker image:
     ```bash
@@ -363,7 +364,7 @@ Region: Select the region closest to your geographical location.
 
 Deploy & Build:
 
-Repository: https://github.com/RevathyRamalingam/obesity-class-prediction
+Repository: https://github.com/RevathyRamalingam/slicewise-5g-resource-allocation
 
 Branch: master
 
