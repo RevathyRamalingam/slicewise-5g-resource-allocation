@@ -4,13 +4,13 @@ import pandas as pd
 
 # Set page configuration
 st.set_page_config(page_title="SliceWise 5G Slice Predictor", layout="wide")
-st.image("graph_visualization/networkslicing.jpg", width='stretch')
+st.image("networkslicing.jpg", width='stretch')
 st.title("📡 5G Network Slice Resource Allocation")
 st.markdown("Adjust the network metrics below to predict the required Slice Category (**eMBB**, **MTC**, or **URLLC**).")
 
 # Sidebar for Network Load
 st.sidebar.header("Global Context")
-st.sidebar.image("graph_visualization/sidebar.jpg", width='stretch')
+st.sidebar.image("sidebar.jpg", width='stretch')
 network_load = st.sidebar.selectbox("Network Load", ["peak", "off-peak", "night"])
 
 # Main Layout: Three columns for parameters

@@ -27,7 +27,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 RUN uv sync --locked
 
 # Copy application code and model data into the container
-COPY "src/predict.py" "./model/xgboost_model.bin" "src/ui.py" "start.sh" ./
+COPY "src/predict.py" "./model/xgboost_model.bin" "src/ui.py" "start.sh" "graph_visualization/sidebar.jpg" "graph_visualization/networkslicing.jpg" ./
 
 #give excecutable permission for start shell script
 RUN chmod +x start.sh
