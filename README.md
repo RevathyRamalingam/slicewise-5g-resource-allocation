@@ -191,11 +191,23 @@ git clone https://github.com/RevathyRamalingam/slicewise-5g-resource-allocation.
 
 go to project root folder and run below command 
 
+```
 cd slicewise-5g-resource-allocation 
+python src/notebook.py
+```
 
-> python src/notebook.py
----
+TEST COVERAGE
 
+Pytests are written for unit testing covering the train python script.
+
+To run the test:
+
+Go to project root folder and type
+
+```
+cd slicewise-5g-resource-allocation
+pytest -v
+```
 ## Observation
 
 1. Initially started with kaggle dataset on 5g network slice classification. But the dataset was not balanced and had only 7 features most of them were static features. The model simply memorized the values and gave accurate predictions(ROC 1.0). Such models can fail in realtime when the features are not constant. So took a dataset from colosseum dataset and it is balanced(imbalance ratio = 1.007) and it had more than 30 features. 

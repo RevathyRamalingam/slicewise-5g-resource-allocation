@@ -50,3 +50,23 @@ def test_convert_timestamp_to_networkload_tc1():
 
     assert load_op == "off-peak"
     assert hour_op == 13
+
+def test_convert_timestamp_to_networkload_tc2():
+    """Test off-peak load at 13:00 Rome time."""
+    rome_dt = datetime(2026, 1, 2, 2, 0, 0, tzinfo=ZoneInfo("Europe/Rome"))
+    off_peak_timestamp = int(rome_dt.timestamp() * 1000)
+
+    hour_op, load_op = train.convert_timestamp_to_networkLoad(off_peak_timestamp)
+
+    assert load_op == "night"
+    assert hour_op == 2
+
+def test_convert_timestamp_to_networkload_tc3():
+    """Test off-peak load at 13:00 Rome time."""
+    rome_dt = datetime(2026, 1, 2, 21, 0, 0, tzinfo=ZoneInfo("Europe/Rome"))
+    off_peak_timestamp = int(rome_dt.timestamp() * 1000)
+
+    hour_op, load_op = train.convert_timestamp_to_networkLoad(off_peak_timestamp)
+
+    assert load_op == "peak"
+    assert hour_op == 21
