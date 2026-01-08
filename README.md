@@ -192,7 +192,8 @@ git clone https://github.com/RevathyRamalingam/slicewise-5g-resource-allocation.
 go to project root folder and run below command 
 
 ```
-cd slicewise-5g-resource-allocation 
+cd slicewise-5g-resource-allocation
+pip install -r requirements.txt
 python src/notebook.py
 ```
 
