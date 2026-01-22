@@ -225,14 +225,23 @@ Before removing static features, the model was giving precision, recall, F1score
 6. XGboost model is hyperparamater tuned using RandomCVSearch with 5 folds and optimal parameters are identified to be used in the final model. It is tested against test dataset to make sure it doesn't overfit. 
 7. The model was 10% not accurate for critical mission applications(Recall =0.90), after engineering features such as
 'mcs_sinr_ratio', 'grant_ratio', 'prb_efficiency', 'latency_proxy'
+
 mcs_sinr_ratio - This feature relates the data rate capability (MCS) to the actual signal quality (SINR)
+
 grant_ratio - Captures how efficiently the network allocates resources to user requests
-prb_efficiency - Measures how effectively allocated spectrum resources are actually used
-Helped distinguish between simple capacity constraints and actual network anomalies
-Reduced false negatives where raw PRB usage appeared normal but efficiency was poor
+
+prb_efficiency - Measures how effectively allocated spectrum resources are actually used 
+
+Helped distinguish between simple capacity constraints and actual network anomalies 
+
+Reduced false negatives where raw PRB usage appeared normal but efficiency was poor 
+
 latency_proxy - Provides an indirect measure of end-to-end performance degradation
+
 Helped catch cascade failures and multi-factor degradation scenarios
+
 7. pytests were written to cover unit testing scenarios
+   
 8. Solution is docker containerized and deployed in Render cloud ,the streamlit UI interacts with backend FASTAPI server to predict the network slice as per the user network pattern.
 
 ## Future Scope 
